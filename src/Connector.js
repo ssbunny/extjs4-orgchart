@@ -1,3 +1,10 @@
+/**
+ * 连接器
+ *
+ * @class Ext.orgchart.Connector
+ * @author zhangqiang
+ * @date 2017.03.10
+ */
 Ext.define('Ext.orgchart.Connector', {
 
     isOrgchartConnector: true,

@@ -1,0 +1,32 @@
+{
+  "name": "extjs4-orgchart",
+  "version": "1.0.0",
+  "description": "An organization chart based on ExtJS4.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ssbunny/extjs4-orgchart.git"
+  },
+  "keywords": [
+    "orgchart",
+    "extjs4"
+  ],
+  "author": "zhangqiang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ssbunny/extjs4-orgchart/issues"
+  },
+  "homepage": "https://github.com/ssbunny/extjs4-orgchart#readme",
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-concat": "^2.6.1",
+    "gulp-jsdoc": "^0.1.5",
+    "gulp-jsdoc3": "^1.0.1"
+  }
+}

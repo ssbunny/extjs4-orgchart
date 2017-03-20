@@ -1,6 +1,7 @@
 /**
  * Expander
  *
+ * @class Ext.orgchart.Expander
  * @author zhangqiang
  * @date 2017.03.10
  */

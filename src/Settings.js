@@ -1,3 +1,10 @@
+/**
+ * 配置
+ *
+ * @class Ext.orgchart.Settings
+ * @author zhangqiang
+ * @date 2017.03.10
+ */
 Ext.define('Ext.orgchart.Settings', {
 
     // TODO 水平方向

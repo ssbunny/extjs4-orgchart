@@ -1,4 +1,99 @@
 /**
+ * 配置
+ *
+ * @class Ext.orgchart.Settings
+ * @author zhangqiang
+ * @date 2017.03.10
+ */
+Ext.define('Ext.orgchart.Settings', {
+
+    // TODO 水平方向
+    horizontal: true,
+
+    // 内边距
+    insetPadding: 10,
+
+    // 各节点间的水平间距
+    horizontalSpace: 10,
+
+    // 各节点间的最小垂直间距
+    verticalSpace: 40,
+
+    // 节点宽度
+    nodeWidth: 170,
+
+    // 节点高度
+    nodeHeight: 33,
+
+    // 节点边框半径（圆角）
+    nodeBorderRadius: 3,
+
+    // 节点边框颜色
+    nodeBorderColor: '#EEE',
+
+    // 节点边框宽度
+    nodeBorderWidth: 0,
+
+    // 节点背景色
+    nodeBackgroundColor: '#2073CC',
+
+    // 节点名文本颜色
+    nodeNameColor: '#FFF',
+
+    // 节点名文本字号
+    nodeNameFontSize: '11px',
+
+    // 节点名文本Weight
+    nodeNameFontWeight: 'normal',
+
+    // 节点名文本字体
+    nodeNameFontFamily: 'monospace',
+
+    // 节点值文本颜色
+    nodeValueColor: '#FFE847',
+
+    // 节点值文本字号
+    nodeValueFontSize: '12px',
+
+    // 节点值文本Weight
+    nodeValueFontWeight: 'bold',
+
+    // 节点值文本字体
+    nodeValueFontFamily: 'monospace',
+
+    // 节点与其文本内间距
+    nodeInsetPadding: 10,
+
+    // TODO 连线类型
+    connectorLine: 'Orthogonal', // Straight | Curved | Bezier | Orthogonal
+
+    // 连线的颜色
+    connectorColor: '#E88B41',
+
+    // 连线的宽度
+    connectorWidth: 1,
+
+    connectorMargin: 2,
+
+    // 折叠按钮的类型
+    expanderType: 'circle', // circle | square
+
+    // 折叠按钮的大小
+    expanderSize: 14,  // expanderType 为 circle 时表示直径，square 时表示边长
+
+    // 折叠按钮内边距
+    expanderPadding: 2,
+
+    expanderMargin: 4,
+
+    constructor: function (config) {
+        Ext.apply(this, config);
+    }
+
+}, function () {
+    this.defaults = new this();
+});
+/**
  * 节点
  *
  * @class Ext.orgchart.Node
@@ -631,6 +726,550 @@ Ext.define('Ext.orgchart.Node', {
                 'fill': this._rectConfig.fill
             }
         });
+    }
+
+});
+/**
+ * Expander
+ *
+ * @class Ext.orgchart.Expander
+ * @author zhangqiang
+ * @date 2017.03.10
+ */
+Ext.define('Ext.orgchart.Expander', {
+
+    /**
+     * @private
+     */
+    isOrgchartExpander: true,
+
+    /**
+     * expander 所属的节点
+     */
+    node: undefined,
+
+
+    constructor: function (config) {
+        Ext.apply(this, config);
+
+        if (!this.node) {
+            Ext.Error.raise('必须指定 node 属性');
+        }
+
+        this.node.expander = this;
+
+        this.initialConfig = config;
+        this.id = config.id || Ext.id([]._, 'orgchart-expander-');
+        this._initSpritesConfig();
+        this.createSprite(this.node.container.surface);
+
+        return this;
+    },
+
+
+    _initSpritesConfig: function () {
+        var t = this.node.container.settings;
+        var outer = {};
+
+        if (t.expanderType === 'square') {
+            outer.type = 'rect';
+            outer.width = t.expanderSize;
+            outer.height = t.expanderSize;
+        } else {
+            outer.type = 'circle';
+            outer.radius = t.expanderSize * .5;
+        }
+
+        this._outerConfig = Ext.apply(outer, {
+            id: this.id + '-outer',
+            stroke: t.connectorColor,
+            'stroke-width': t.connectorWidth,
+            fill: '#FFF'
+        });
+
+        this._innerConfig = Ext.apply({}, {
+            id: this.id + '-inner',
+            type: 'path',
+            stroke: t.connectorColor,
+            'stroke-width': t.connectorWidth
+        });
+    },
+
+    _initInnerPath: function (start, half, radius, slight) {
+        var path = [
+            'M', start - radius + slight, ' ', half,
+            'H', start + radius - slight
+        ];
+        this._minusPath = path.join('');
+
+        path = path.concat([
+            'M', start, ' ', half - radius + slight,
+            'V', half + radius - slight
+        ]);
+        this._plusPath = path.join('');
+    },
+
+
+    /**
+     * 绘制
+     */
+    drawIt: function (animite) {
+        var t = this.node.container.settings;
+        var type = this.node.expanded ? '-' : '+';
+
+        var radius = t.expanderSize * .5;
+        var slight = t.expanderPadding;
+
+        var start = this.node.x + t.nodeWidth + radius + t.nodeBorderWidth * .5 + t.expanderMargin;
+        var half = this.node.y + t.nodeHeight * .5;
+
+        var revise = this._outerConfig.type === 'rect' ? -(radius) : 0;
+
+        this._initInnerPath(start, half, radius, slight);
+
+        if (animite === 'move') {
+            this._drawItWithAnimiteMove(type, start, half, revise);
+        } else {
+            this._drawItWithoutAnimite(type, start, half, revise);
+        }
+
+        this.sprite.get('outer').setStyle('cursor', 'pointer');
+        this.sprite.get('inner').setStyle('cursor', 'pointer');
+    },
+
+    _drawItWithAnimiteMove: function (type, start, half, revise) {
+        var me = this;
+        var duration = 200;
+        this.sprite.get('outer').animate({
+            duration: duration,
+            to: {
+                x: start + revise,
+                y: half + revise
+            }
+        });
+        this.sprite.get('inner').animate({
+            duration: duration,
+            to: {
+                path: type === '+' ? me._plusPath : me._minusPath
+            }
+        });
+    },
+
+    _drawItWithoutAnimite: function (type, start, half, revise) {
+        this.sprite.get('outer').setAttributes({
+            x: start + revise,
+            y: half + revise
+        }, true);
+        this.redrawType(type);
+    },
+
+    redrawType: function (type) {
+        this.sprite.get('inner').setAttributes({
+            path: type === '+' ? this._plusPath : this._minusPath
+        }, true);
+    },
+
+
+    createSprite: function (surface) {
+        this.surface = surface;
+
+        var outerSprite = Ext.create('Ext.draw.Sprite', this._outerConfig);
+        var innerSprite = Ext.create('Ext.draw.Sprite', this._innerConfig);
+
+        this.sprite = Ext.create('Ext.draw.CompositeSprite', {
+            surface: surface,
+            id: this.id + '-expandergroup'
+        });
+
+        this.sprite.add('outer', outerSprite);
+        this.sprite.add('inner', innerSprite);
+
+        this.sprite.on('click', this.handler, this);
+
+        surface.add(outerSprite);
+        surface.add(innerSprite);
+
+        return this.sprite;
+    },
+
+
+    destroyIt: function () {
+        this.sprite.get('outer').destroy();
+        this.sprite.get('inner').destroy();
+        this.sprite.destroy();
+
+        delete this.sprite;
+        delete this.node.expander;
+    },
+
+
+    handler: function () {
+        var me = this;
+
+        if (!this.node.children) {
+            return;
+        }
+
+        if (this.isExpanding) {
+            return;
+        }
+
+        this.isExpanding = true;
+
+        setTimeout(function () { // 动画
+            me.isExpanding = false;
+        }, 300);
+
+        if (this.node.expanded) {
+            this.node.collapseIt();
+            this.redrawType('+');
+        } else {
+            this.node.expandIt();
+            this.redrawType('-');
+        }
+    }
+
+});
+/**
+ * 连接器
+ *
+ * @class Ext.orgchart.Connector
+ * @author zhangqiang
+ * @date 2017.03.10
+ */
+Ext.define('Ext.orgchart.Connector', {
+
+    isOrgchartConnector: true,
+
+    /**
+     * Connector 所属的节点
+     */
+    node: undefined,
+
+    constructor: function (config) {
+        var s;
+
+        Ext.apply(this, config);
+
+        if (!this.node) {
+            Ext.Error.raise('必须指定 node 属性');
+        }
+
+        this.node.connector = this;
+        this.id = config.id || Ext.id([]._, 'orgchart-connector-');
+
+        s = this.node.container.settings;
+
+        this._pathConfig = Ext.apply({}, {
+            id: this.id + '-path',
+            type: 'path',
+            stroke: s.connectorColor,
+            'stroke-width': s.connectorWidth
+        });
+
+        this.createSprite(this.node.container.surface);
+        return this;
+    },
+
+
+    createSprite: function (surface) {
+        this.surface = surface;
+        this.sprite = Ext.create('Ext.draw.Sprite', this._pathConfig);
+        surface.add(this.sprite);
+        return this.sprite;
+    },
+
+
+    drawIt: function (stretching) {
+        var node1 = this.node.parent;
+        var node2 = this.node;
+
+        var source = node1.getSourceAnchor();
+        var target = node2.getTargetAnchor();
+
+        var half = (target.x - source.x) *.5;
+        var path = [
+            'M', source.x, ' ', source.y,
+            'H', source.x + half,
+            'V', target.y,
+            'H', target.x
+        ].join('');
+
+        if (stretching) {
+            this.sprite.animate({
+                duration: 200,
+                to: {
+                    path: path
+                }
+            });
+        } else {
+            this.sprite.setAttributes({
+                path: path
+            }, true);
+        }
+    },
+
+    destroyIt: function () {
+        this.sprite.destroy();
+        delete this.node.connector;
+    }
+
+});
+/**
+ * 组织机构树
+ *
+ * @class Ext.orgchart.OrgChart
+ * @extends Ext.draw.Component
+ * @author zhangqiang
+ * @date 2017.03.10
+ */
+Ext.define('Ext.orgchart.OrgChart', {
+
+    extend: 'Ext.draw.Component',
+
+    requires: [
+        'Ext.orgchart.Settings',
+        'Ext.orgchart.Node',
+        'Ext.orgchart.Connector'
+    ],
+
+    // @private
+    viewBox: false,
+
+    /**
+     * 当前 OrgChart 实例使用的设置
+     *
+     * @memberof Ext.orgchart.OrgChart#
+     * @member {Ext.orgchart.Settings}
+     * @default Ext.orgchart.Settings.defaults
+     */
+    settings: Ext.orgchart.Settings.defaults,
+
+    /**
+     * 当前 viewBox 的 x 坐标
+     *
+     * @memberof Ext.orgchart.OrgChart#
+     * @member {number}
+     */
+    x: 0,
+
+    /**
+     * 当前 viewBox 的 y 坐标
+     *
+     * @memberof Ext.orgchart.OrgChart#
+     * @member {number}
+     */
+    y: 0,
+
+    statics: {
+
+        /**
+         * 节点样式名前缀
+         * @memberof Ext.orgchart.OrgChart
+         * @member {string}
+         * @default
+         */
+        NODE_CLASS_PREFIX: 'orgchart-node-'
+    },
+
+
+    // onRender 之后才能获得 surface
+    // @private
+    onRender: function () {
+        this.callParent(arguments);
+
+        this.viewBox = false;
+
+        this._assertDefine('root');
+        this._assertDefine('height');
+        this._assertDefine('width');
+
+        this.surface.setViewBox(0, 0, this.width, this.height);
+
+        this._initStyleSheet();
+        this._initDraggable();
+
+        /**
+         * 节点管理器，保留所有节点实例的引用
+         * @memberof Ext.orgchart.OrgChart#
+         * @member {Ext.util.HashMap}
+         */
+        this.nodeManager = this.createNodeManager();
+        this._initExpandedLeaves();
+        this.drawIt();
+    },
+
+
+    /**
+     * 开始绘制
+     * @memberof Ext.orgchart.OrgChart#
+     * @function
+     */
+    drawIt: function () {
+        var root = this.drawRoot();
+        root.expandIt();
+        this.moveToCenter();
+    },
+
+
+    /**
+     * 绘制根节点
+     * @memberof Ext.orgchart.OrgChart#
+     * @function
+     * @returns {Ext.orgchart.Node}
+     */
+    drawRoot: function () {
+        var root = this.findRootNode();
+        root.x = root.y = 0;
+        root.drawIt();
+        root.drawExpander();
+        return root;
+    },
+
+
+    /**
+     * 创建节点管理器，初始化所有节点并为其创建层级关联、增加附加属性。
+     * @returns {Ext.util.HashMap}
+     * @private
+     */
+    createNodeManager: function () {
+        var me = this;
+        var hashMap = Ext.create('Ext.util.HashMap');
+
+        (function self(n, parent, depth, order) {
+            var i, len;
+
+            var node = Ext.create('Ext.orgchart.Node', {
+                id: n.id,
+                nameText: n.nameText || '',
+                valueText: n.valueText || '',
+                color: n.color,
+                expanded: !!n.expanded,
+                depth: depth,
+                order: order,
+                parent: parent,
+                container: me
+            });
+
+            if (depth === 0 && order === 0) {
+                hashMap.root = node; // 保留引用，以便快速找到根节点
+            }
+            if (parent) { // 关联到子节点
+                if (!Ext.isArray(parent.children)) {
+                    parent.children = [];
+                }
+                parent.children.push(node);
+            }
+
+            hashMap.add(node);
+            depth++;
+
+            if (n.children && Ext.isArray(n.children)) {
+                for (i = 0, len = n.children.length; i < len; ++i) {
+                    self(n.children[i], node, depth, i);
+                }
+            }
+        }(me.root, undefined, 0, 0));
+
+        return hashMap;
+    },
+
+
+    /**
+     * 获取根节点
+     * @memberof Ext.orgchart.OrgChart#
+     * @function
+     * @returns {Ext.orgchart.Node}
+     */
+    findRootNode: function () {
+        return this.nodeManager.root;
+    },
+
+
+    /**
+     * 平移至垂直居中
+     * @memberof Ext.orgchart.OrgChart#
+     * @function
+     */
+    moveToCenter: function () {
+        var s = this.settings;
+        this.x = -s.insetPadding;
+        this.y = s.nodeHeight - this.height * .5;
+        this.surface.setViewBox(this.x, this.y, this.width, this.height);
+    },
+
+
+    /*
+     * @private
+     */
+    _initExpandedLeaves: function () {
+        this.findRootNode().preorderTraversal(function (node) {
+            node.markExpandedLeaves();
+        });
+    },
+
+
+    _initStyleSheet: function () {
+        var className = Ext.orgchart.OrgChart.NODE_CLASS_PREFIX + this.id;
+        var clazz = [
+            '.', className, ', .', className, ' tspan{',
+            'cursor:move;',
+            '}'
+        ].join('');
+        Ext.util.CSS.createStyleSheet(clazz);
+    },
+
+
+    /**
+     * 初始化鼠标拖拽效果
+     * TODO VML 兼容性测试
+     * @private
+     */
+    _initDraggable: function () {
+        var me = this;
+        var s = this.surface;
+        var className = Ext.orgchart.OrgChart.NODE_CLASS_PREFIX + this.id;
+
+        this.x = s.viewBox.x;
+        this.y = s.viewBox.y;
+
+        s.on('mousedown', function (e) {
+            var t = e.getTarget(null, 2);
+            var isNodeRect = false;
+            var downX = e.getX();
+            var downY = e.getY();
+
+            var moveFunction = function (moveEvent) {
+                s.setViewBox(
+                    downX - moveEvent.getX() + me.x,
+                    downY - moveEvent.getY() + me.y,
+                    me.width,
+                    me.height
+                );
+            };
+
+            if (Ext.supports.ClassList) {
+                isNodeRect = t.classList.contains(className);
+            } else {
+                isNodeRect = t.id && ~t.id.indexOf('-rect');
+            }
+
+            if (t.tagName === 'tspan' || (isNodeRect && t.tagName === 'rect')) {
+                s.on('mousemove', moveFunction, me);
+                s.on('mouseup', function () {
+                    s.un('mousemove', moveFunction, me);
+                    me.x = me.surface.viewBox.x;
+                    me.y = me.surface.viewBox.y;
+                }, me, {single: true});
+            }
+        });
+    },
+
+
+    _assertDefine: function (prop) {
+        if (typeof this[prop] === 'undefined') {
+            Ext.Error.raise('必须为 Ext.orgchart.OrgChart 实例指定 ' + prop + ' 属性');
+        }
     }
 
 });

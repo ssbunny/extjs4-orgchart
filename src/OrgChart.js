@@ -1,6 +1,10 @@
 /**
- * 组织机构树组件
+ * 组织机构树
  *
+ * @class Ext.orgchart.OrgChart
+ * @extends Ext.draw.Component
+ * @author zhangqiang
+ * @date 2017.03.10
  */
 Ext.define('Ext.orgchart.OrgChart', {
 
@@ -17,20 +21,37 @@ Ext.define('Ext.orgchart.OrgChart', {
 
     /**
      * 当前 OrgChart 实例使用的设置
+     *
+     * @memberof Ext.orgchart.OrgChart#
+     * @member {Ext.orgchart.Settings}
+     * @default Ext.orgchart.Settings.defaults
      */
     settings: Ext.orgchart.Settings.defaults,
 
     /**
      * 当前 viewBox 的 x 坐标
+     *
+     * @memberof Ext.orgchart.OrgChart#
+     * @member {number}
      */
     x: 0,
 
     /**
      * 当前 viewBox 的 y 坐标
+     *
+     * @memberof Ext.orgchart.OrgChart#
+     * @member {number}
      */
     y: 0,
 
     statics: {
+
+        /**
+         * 节点样式名前缀
+         * @memberof Ext.orgchart.OrgChart
+         * @member {string}
+         * @default
+         */
         NODE_CLASS_PREFIX: 'orgchart-node-'
     },
 
@@ -53,7 +74,8 @@ Ext.define('Ext.orgchart.OrgChart', {
 
         /**
          * 节点管理器，保留所有节点实例的引用
-         * @type {Ext.util.HashMap}
+         * @memberof Ext.orgchart.OrgChart#
+         * @member {Ext.util.HashMap}
          */
         this.nodeManager = this.createNodeManager();
         this._initExpandedLeaves();
@@ -63,6 +85,8 @@ Ext.define('Ext.orgchart.OrgChart', {
 
     /**
      * 开始绘制
+     * @memberof Ext.orgchart.OrgChart#
+     * @function
      */
     drawIt: function () {
         var root = this.drawRoot();
@@ -73,6 +97,8 @@ Ext.define('Ext.orgchart.OrgChart', {
 
     /**
      * 绘制根节点
+     * @memberof Ext.orgchart.OrgChart#
+     * @function
      * @returns {Ext.orgchart.Node}
      */
     drawRoot: function () {
@@ -134,6 +160,8 @@ Ext.define('Ext.orgchart.OrgChart', {
 
     /**
      * 获取根节点
+     * @memberof Ext.orgchart.OrgChart#
+     * @function
      * @returns {Ext.orgchart.Node}
      */
     findRootNode: function () {
@@ -143,6 +171,8 @@ Ext.define('Ext.orgchart.OrgChart', {
 
     /**
      * 平移至垂直居中
+     * @memberof Ext.orgchart.OrgChart#
+     * @function
      */
     moveToCenter: function () {
         var s = this.settings;

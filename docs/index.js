@@ -6,9 +6,6 @@ Ext.onReady(function () {
         width: 650,
         height: 600,
 
-        viewBox: true,
-
-
         root: {
             nameText: '0',
             valueText: '0',
