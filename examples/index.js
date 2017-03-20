@@ -6,15 +6,14 @@ Ext.onReady(function () {
         width: 650,
         height: 600,
 
-        style: {
-            backgroundColor: '#EEE',
-            marginBottom: '10px'
-        },
+        viewBox: true,
+
 
         root: {
             nameText: '0',
             valueText: '0',
             expanded: true,
+            color: 'red',
             children: [
                 {
                     nameText: '0-0',

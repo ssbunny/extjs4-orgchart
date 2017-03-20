@@ -9,8 +9,7 @@ Ext.define('Ext.orgchart.OrgChart', {
     requires: [
         'Ext.orgchart.Settings',
         'Ext.orgchart.Node',
-        'Ext.orgchart.Connector',
-        'Ext.orgchart.Utils'
+        'Ext.orgchart.Connector'
     ],
 
     // @private
@@ -31,11 +30,17 @@ Ext.define('Ext.orgchart.OrgChart', {
      */
     y: 0,
 
+    statics: {
+        NODE_CLASS_PREFIX: 'orgchart-node-'
+    },
+
 
     // onRender 之后才能获得 surface
     // @private
     onRender: function () {
         this.callParent(arguments);
+
+        this.viewBox = false;
 
         this._assertDefine('root');
         this._assertDefine('height');
@@ -43,6 +48,7 @@ Ext.define('Ext.orgchart.OrgChart', {
 
         this.surface.setViewBox(0, 0, this.width, this.height);
 
+        this._initStyleSheet();
         this._initDraggable();
 
         /**
@@ -94,6 +100,7 @@ Ext.define('Ext.orgchart.OrgChart', {
                 id: n.id,
                 nameText: n.nameText || '',
                 valueText: n.valueText || '',
+                color: n.color,
                 expanded: !!n.expanded,
                 depth: depth,
                 order: order,
@@ -155,6 +162,17 @@ Ext.define('Ext.orgchart.OrgChart', {
     },
 
 
+    _initStyleSheet: function () {
+        var className = Ext.orgchart.OrgChart.NODE_CLASS_PREFIX + this.id;
+        var clazz = [
+            '.', className, ', .', className, ' tspan{',
+            'cursor:move;',
+            '}'
+        ].join('');
+        Ext.util.CSS.createStyleSheet(clazz);
+    },
+
+
     /**
      * 初始化鼠标拖拽效果
      * TODO VML 兼容性测试
@@ -163,6 +181,7 @@ Ext.define('Ext.orgchart.OrgChart', {
     _initDraggable: function () {
         var me = this;
         var s = this.surface;
+        var className = Ext.orgchart.OrgChart.NODE_CLASS_PREFIX + this.id;
 
         this.x = s.viewBox.x;
         this.y = s.viewBox.y;
@@ -183,7 +202,7 @@ Ext.define('Ext.orgchart.OrgChart', {
             };
 
             if (Ext.supports.ClassList) {
-                isNodeRect = t.classList.contains(Ext.orgchart.Utils.NODE_CLASS_NAME);
+                isNodeRect = t.classList.contains(className);
             } else {
                 isNodeRect = t.id && ~t.id.indexOf('-rect');
             }

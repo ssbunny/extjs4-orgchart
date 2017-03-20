@@ -1,4 +1,3 @@
-//noinspection JSUnusedGlobalSymbols
 /**
  * 节点
  *
@@ -6,8 +5,6 @@
  * @date 2017.03.10
  */
 Ext.define('Ext.orgchart.Node', {
-
-    requires: ['Ext.orgchart.Utils'],
 
     /**
      * @private
@@ -88,7 +85,7 @@ Ext.define('Ext.orgchart.Node', {
         this._initSpritesConfig();
 
         try {
-            this._darkRectColor = Ext.orgchart.Utils.deepenIt(this._rectConfig.fill, .1);
+            this._darkRectColor = Ext.draw.Color.fromString(this._rectConfig.fill).getDarker(.1).toString();
         } catch (e) {
             this._darkRectColor = this._rectConfig.fill;
         }
@@ -284,7 +281,7 @@ Ext.define('Ext.orgchart.Node', {
         var P = this.container.settings.insetPadding;
         var NH = this.container.settings.nodeHeight;
         var NW = this.container.settings.nodeWidth;
-        var cls = Ext.orgchart.Utils.NODE_CLASS_NAME;
+        var cls = Ext.orgchart.OrgChart.NODE_CLASS_PREFIX + this.container.id;
 
         var vt;
         var nameX = P + this.x;
@@ -381,17 +378,6 @@ Ext.define('Ext.orgchart.Node', {
         for (i = 0, len = this.order; i < len; ++i) {
             fn(this.parent.children[i]);
         }
-    },
-
-
-    /**
-     * 找右兄弟
-     */
-    findRightSibling: function () {
-        if (this.parent && this.order > 0) {
-            return this.parent.children[this.order - 1];
-        }
-        return undefined;
     },
 
 
@@ -520,14 +506,14 @@ Ext.define('Ext.orgchart.Node', {
     giveWay: function (translateY, opposite) {
         var fixed = opposite ? -1 : 1;
         if (!this.isRoot()) {
-            this._moveDistance('Left', translateY * fixed);
-            this._moveDistance('Right', -translateY * fixed);
+            this._moveDistance('iterateLeftSiblings', translateY * fixed);
+            this._moveDistance('iterateRightSiblings', -translateY * fixed);
         }
     },
 
 
-    _moveDistance: function (dir, translateY) {
-        this['iterate' + dir + 'Siblings'](function (sibling) {
+    _moveDistance: function (method, translateY) {
+        this[method](function (sibling) {
             sibling.preorderTraversal(function (node) {
                 node.y += translateY;
                 node.drawIt('move');
@@ -537,13 +523,13 @@ Ext.define('Ext.orgchart.Node', {
         });
 
         if (this.parent && !this.parent.isRoot()) {
-            this.parent._moveDistance(dir, translateY);
+            this.parent._moveDistance(method, translateY);
         }
     },
 
 
     /**
-     * 判读当前节点是否为根节点
+     * 判断当前节点是否为根节点
      * @returns {boolean}
      */
     isRoot: function () {

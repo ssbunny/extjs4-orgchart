@@ -1,5 +1,8 @@
 Ext.define('Ext.orgchart.Settings', {
 
+    // TODO 水平方向
+    horizontal: true,
+
     // 内边距
     insetPadding: 10,
 
@@ -13,7 +16,7 @@ Ext.define('Ext.orgchart.Settings', {
     nodeWidth: 170,
 
     // 节点高度
-    nodeHeight: 34, // 请使用偶数（ExtJS BUG）
+    nodeHeight: 33,
 
     // 节点边框半径（圆角）
     nodeBorderRadius: 3,
@@ -54,7 +57,7 @@ Ext.define('Ext.orgchart.Settings', {
     // 节点与其文本内间距
     nodeInsetPadding: 10,
 
-    // 连线类型（未实现）
+    // TODO 连线类型
     connectorLine: 'Orthogonal', // Straight | Curved | Bezier | Orthogonal
 
     // 连线的颜色
@@ -66,7 +69,7 @@ Ext.define('Ext.orgchart.Settings', {
     connectorMargin: 2,
 
     // 折叠按钮的类型
-    expanderType: 'square', // circle | square
+    expanderType: 'circle', // circle | square
 
     // 折叠按钮的大小
     expanderSize: 14,  // expanderType 为 circle 时表示直径，square 时表示边长
