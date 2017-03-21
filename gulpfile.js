@@ -1,8 +1,19 @@
 var gulp = require('gulp');
-var jsdoc = require('gulp-jsdoc3');
 var concat = require('gulp-concat');
+var uglify = require('gulp-uglify');
+var pump = require('pump');
 
-gulp.task('scripts', function () {
+gulp.task('compress', ['concat'], function (cb) {
+    pump([
+            gulp.src('dist/extjs4-orgchart.js'),
+            uglify(),
+            gulp.dest('dist')
+        ],
+        cb
+    );
+});
+
+gulp.task('concat', function () {
     return gulp.src([
         './src/Settings.js',
         './src/Node.js',
@@ -14,12 +25,4 @@ gulp.task('scripts', function () {
 });
 
 
-/*
-gulp.task('doc', function (cb) {
-    gulp.src(['README.md', './src/!*.js'], {read: false})
-        .pipe(jsdoc(cb));
-});
-*/
-
-
-gulp.task('default', [/*'doc',*/ 'scripts']);
+gulp.task('default', ['compress']);
