@@ -23,7 +23,7 @@ Ext.define('Ext.orgchart.Settings', {
     nodeWidth: 170,
 
     // 节点高度
-    nodeHeight: 33,
+    nodeHeight: 40,
 
     // 节点边框半径（圆角）
     nodeBorderRadius: 3,
