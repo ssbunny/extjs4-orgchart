@@ -76,7 +76,7 @@ Ext.define('Ext.orgchart.Settings', {
     connectorMargin: 2,
 
     // 折叠按钮的类型
-    expanderType: 'circle', // circle | square
+    expanderType: 'square', // circle | square
 
     // 折叠按钮的大小
     expanderSize: 14,  // expanderType 为 circle 时表示直径，square 时表示边长
